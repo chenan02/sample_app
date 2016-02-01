@@ -1,1 +1,6 @@
-# empty
+# fixture for testing loggin in
+andrew:
+  name: Andrew Chen
+  email: andrew@example.com
+  password_digest: <%= User.digest('password') %>
+
