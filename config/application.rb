@@ -22,5 +22,9 @@ module SampleApp
 
     # Do not swallow errors in after_commit/after_rollback callbacks.
     config.active_record.raise_in_transactional_callbacks = true
+    
+    # Include the authenticity token in remote forms
+    # allow graceful degradation (if js/ajax disabled, use normal render forms)
+    config.action_view.embed_authenticity_token_in_remote_forms = true
   end
 end

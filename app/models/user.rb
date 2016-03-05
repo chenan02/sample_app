@@ -1,5 +1,14 @@
 class User < ActiveRecord::Base
+    # dependent :destroy means if user destroyed, microposts destroyed
     has_many :microposts, dependent: :destroy
+    # must clarify active_relationships modeled by class different name
+    has_many :active_relationships, class_name: "Relationship", foreign_key: "follower_id", dependent: :destroy
+    has_many :passive_relationships, class_name: "Relationship", foreign_key: "followed_id", dependent: :destroy
+    # call ut following because followeds is weird
+    # active reacord creates following_ids method
+    has_many :following, through: :active_relationships, source: :followed
+    has_many :followers, through: :passive_relationships
+    
     attr_accessor :remember_token, :activation_token, :reset_token
     # look for fxns below to call before saving
     before_save :downcase_email
@@ -70,7 +79,25 @@ class User < ActiveRecord::Base
     
     # selects all the posts owned by the user (? avoids sql injection)
     def feed
-        Micropost.where("user_id = ?", id)
+        # Micropost.where("user_id IN (:following_ids) OR user_id = :user_id", following_ids: following_ids, user_id: id)
+        # below more efficient, pushes set logic into database?
+        following_ids = "SELECT followed_id FROM relationships WHERE follower_id = :user_id"
+        Micropost.where("user_id IN (#{following_ids}) OR user_id = :user_id", user_id: id)
+    end
+    
+    # follow other_user
+    def follow(other_user)
+        active_relationships.create(followed_id: other_user.id)
+    end
+    
+    # unfollow other_user
+    def unfollow(other_user)
+        active_relationships.find_by(followed_id: other_user.id).destroy
+    end
+    
+    # true if following other_user
+    def following?(other_user)
+        following.include?(other_user)
     end
     
     private

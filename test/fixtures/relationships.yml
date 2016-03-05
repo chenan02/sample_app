@@ -1,0 +1,11 @@
+one:
+  follower: andrew
+  followed: michael
+  
+two:
+  follower: user_1
+  followed: andrew
+  
+three:
+  follower: user_2
+  followed: user_1
